@@ -1,0 +1,26 @@
+version: '3'
+
+services:
+  minio:
+    hostname: minio
+    image: minio/minio
+    ports:
+        - 9000:9000
+    command: server ./data
+    volumes:
+      - ./app_static:/data
+    environment:
+      - MINIO_ACCESS_KEY=AKIAIOSFODNN7EXAMPLE
+      - MINIO_SECRET_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+
+  createbuckets:
+    image: minio/mc
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      /usr/bin/mc config host add myminio http://minio:9000 AKIAIOSFODNN7EXAMPLE wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY;
+      /usr/bin/mc mb myminio/content-static;
+      /usr/bin/mc policy set download myminio/content-static/*;
+      exit 0;
+      "
